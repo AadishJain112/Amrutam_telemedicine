@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://telemedicine:telemedicine@postgres:5432/telemedicine
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_started}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: telemedicine
+      POSTGRES_PASSWORD: telemedicine
+      POSTGRES_DB: telemedicine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U telemedicine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+
